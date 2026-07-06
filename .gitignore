@@ -1,0 +1,22 @@
+# STM32CubeIDE / Eclipse specific files
+.settings/
+.metadata/
+Debug/
+Release/
+*.elf
+*.map
+*.hex
+*.bin
+*.list
+
+# Temporary build files
+*.o
+*.d
+*.su
+*.cyclo
+*.elf
+
+# OS generated files
+thumbs.db
+desktop.ini
+.DS_Store
