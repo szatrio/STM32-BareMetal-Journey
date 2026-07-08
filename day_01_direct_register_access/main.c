@@ -14,9 +14,9 @@ int main(void) {
     RCC_AHB1ENR |= (1 << 0);
 
     // 2. Set PA5 as Output
-    // Clear bit 10 & 11 dulu (masking)
+    // Clear bit 10 & 11 (masking)
     GPIOA_MODER &= ~(3 << 10);
-    // Set bit 10 jadi 1 (01 = Output)
+    // Set bit 10 to 1 (01 = Output)
     GPIOA_MODER |= (1 << 10);
 
     while(1) {
