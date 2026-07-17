@@ -8,6 +8,7 @@
 #define AHB1PERIPH_BASE     (PERIPH_BASE + 0x00020000UL)
 #define RCC_BASE            (AHB1PERIPH_BASE + 0x3800UL)
 #define GPIOA_BASE          (AHB1PERIPH_BASE + 0x0000UL)
+#define GPIOC_BASE          (AHB1PERIPH_BASE + 0x0800UL)
 
 // --- Register Offset ---
 #define RCC_AHB1ENR_OFFSET  0x30UL
@@ -16,7 +17,8 @@
 #define GPIOA_OTYPER_OFFSET 0x04UL
 #define GPIOA_PUPDR_OFFSET  0x0CUL
 #define GPIOA_BSRR_OFFSET   0x18UL
-#define GPIOA_IDR_OFFSET    0x10UL
+#define GPIOC_MODER_OFFSET  0x00UL
+#define GPIOC_IDR_OFFSET    0x10UL
 
 // --- Pointers ---
 #define RCC_AHB1ENR         (*(volatile uint32_t *)(RCC_BASE + RCC_AHB1ENR_OFFSET))
@@ -25,10 +27,13 @@
 #define GPIOA_OTYPER		(*(volatile uint32_t *)(GPIOA_BASE + GPIOA_OTYPER_OFFSET))
 #define GPIOA_PUPDR			(*(volatile uint32_t *)(GPIOA_BASE + GPIOA_PUPDR_OFFSET))
 #define GPIOA_BSRR			(*(volatile uint32_t *)(GPIOA_BASE + GPIOA_BSRR_OFFSET))
-#define GPIOA_IDR           (*(volatile uint32_t *)(GPIOA_BASE + GPIOA_IDR_OFFSET))
+#define GPIOC_MODER         (*(volatile uint32_t *)(GPIOA_BASE + GPIOC_MODER_OFFSET))
+#define GPIOC_IDR           (*(volatile uint32_t *)(GPIOC_BASE + GPIOC_IDR_OFFSET))
 
 // --- Bit Definitions ---
 #define RCC_GPIOA_EN        	(1UL << 0)
+#define RCC_GPIOC_EN        	(1UL << 2)
+#define GPIO_MODE_INPUT    		(0UL)
 #define GPIO_MODE_OUTPUT    	(1UL)
 
 typedef enum {

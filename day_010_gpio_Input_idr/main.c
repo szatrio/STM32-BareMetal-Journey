@@ -1,15 +1,18 @@
 #include "stm32f401_gpio.h"
 
 #define LED_PIN    5
-#define BUTTON_PIN 13
+#define BUTTON_PIN 13 // button pin on port C, so use GPIOC
 
 int main(void)
 {
     // Enable Clock GPIOA safely
 	RCC_EnableGPIOClock();
 
-    // Set Pin 5 as Output
-    GPIOA_SetMode(LED_PIN, GPIO_MODE_OUTPUT);
+	// Setup LED (PA5)
+	GPIO_SetMode(&GPIOA_MODER, LED_PIN, GPIO_MODE_OUTPUT);
+
+	// Setup Button (PC13)
+	GPIO_SetMode(&GPIOC_MODER, BUTTON_PIN, GPIO_MODE_INPUT);
 
     // Set Pin 5 No Pull Up/Pull Down
     GPIOA_SetPullUpDown(LED_PIN, GPIO_PUPDR_NOPULLUPDOWN);
@@ -19,9 +22,11 @@ int main(void)
 
     while(1)
     {
-    	// Use atomic function (BSRR)
-    	GPIO_TogglePin(LED_PIN);
-
-    	Delay_Simple(5000000);
+    	// Read Pin Voltage from GPIOC
+    	if (GPIOC_ReadPin(BUTTON_PIN) == 0) {
+			GPIOA_WritePin(LED_PIN, 1);
+		} else {
+			GPIOA_WritePin(LED_PIN, 0);
+		}
     }
 }

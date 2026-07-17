@@ -15,11 +15,11 @@ static inline void validatePin(uint8_t pin){
 }
 
 static inline void RCC_EnableGPIOClock(void) {
-    RCC_AHB1ENR |= RCC_GPIOA_EN;
+    RCC_AHB1ENR |= RCC_GPIOA_EN | RCC_GPIOC_EN;
 }
 
-static inline void GPIOA_SetMode(uint8_t pin, uint32_t mode) {
-    GPIO_Set2BitField(&GPIOA_MODER, pin, mode);
+static inline void GPIO_SetMode(volatile uint32_t *MODER_reg, uint8_t pin, uint32_t mode) {
+    GPIO_Set2BitField(MODER_reg, pin, mode);
 }
 
 static inline void GPIOA_SetOutputOtype(uint8_t pin, uint32_t type){
@@ -54,8 +54,9 @@ static inline void Delay_Simple(uint32_t count) {
     for(volatile uint32_t i = 0; i < count; i++);
 }
 
-static inline uint8_t GPIOA_ReadPin(uint8_t pin){
-	if((GPIOA_IDR & (1UL << pin)) != 0){
+static inline uint8_t GPIOC_ReadPin(uint8_t pin){
+	validatePin(pin);
+	if((GPIOC_IDR & (1UL << pin)) != 0){
 		return 1;
 	}else{
 		return 0;
