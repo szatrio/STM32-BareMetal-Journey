@@ -48,4 +48,9 @@ typedef enum {
 	GPIO_PUPDR_RESERVED  	 = 0x03
 } GPIO_PUPDR_t;
 
+typedef enum {
+    BUTTON_RELEASED = 1,
+    BUTTON_PRESSED  = 0
+} ButtonState_t;
+
 #endif

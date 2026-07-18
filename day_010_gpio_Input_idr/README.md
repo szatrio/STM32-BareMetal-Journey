@@ -1,8 +1,3 @@
-
-# Project Title
-
-A brief description of what this project does and who it's for
-
 # Day 010: Bare-Metal Peripheral Control (GPIO Input & Clock Gating)
 
 ### Objective
