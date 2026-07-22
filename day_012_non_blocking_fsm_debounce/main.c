@@ -3,16 +3,6 @@
 #define LED_PIN    5
 #define BUTTON_PIN 13 // button pin 13 on port C, so use GPIOC
 
-ButtonState_t is_button_pressed_debounced(uint8_t pin) {
-    if (get_button_state(pin) == BUTTON_PRESSED) {
-        Delay_Simple(20000); // Debouncing delay ~20ms
-        if (get_button_state(pin) == BUTTON_PRESSED) {
-            return BUTTON_PRESSED;
-        }
-    }
-    return BUTTON_RELEASED;
-}
-
 int main(void)
 {
     // Enable Clock GPIOA safely
