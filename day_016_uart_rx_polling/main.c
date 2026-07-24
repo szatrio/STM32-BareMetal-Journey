@@ -2,7 +2,6 @@
 #include "stm32f401_usart.h"
 
 #define LED_PIN    5
-#define BUTTON_PIN 13 // PC13
 
 // PIN UART2
 #define UART2_TX_PIN 2  // PA2
@@ -22,23 +21,14 @@ static void System_Init(void)
     };
     GPIO_Init(GPIOA, &led_config);
 
-    // 3. Setup Button (PC13)
-    GPIO_Init_t button_config = {
-        .Pin   = BUTTON_PIN,
-        .Mode  = GPIO_MODE_INPUT,
-        .OType = GPIO_OTYPE_PUSHPULL,
-        .Pull  = GPIO_PUPDR_NOPULLUPDOWN
-    };
-    GPIO_Init(GPIOC, &button_config);
-
-	// 4. Setup Pin Alternate Function UART2 (PA2 & PA3)
+	// 3. Setup Pin Alternate Function UART2 (PA2 & PA3)
 	GPIO_SetMode(&GPIOA->MODER, UART2_TX_PIN, GPIO_MODE_ALT);
 	GPIO_SetMode(&GPIOA->MODER, UART2_RX_PIN, GPIO_MODE_ALT);
 
 	GPIO_SetAltFunction(GPIOA, UART2_TX_PIN, 7); // PA2 -> AF7 (USART2_TX)
 	GPIO_SetAltFunction(GPIOA, UART2_RX_PIN, 7); // PA3 -> AF7 (USART2_RX)
 
-	// 5. Set Baud Rate 115200
+	// 4. Set Baud Rate 115200
 	USART2_Init(115200);
 }
 
@@ -46,22 +36,28 @@ int main(void)
 {
 	System_Init();
 
-	UART_SendChar('A');
+	UART_SendChar('R');
+	UART_SendChar('X');
+	UART_SendChar(' ');
+	UART_SendChar('O');
+	UART_SendChar('K');
+	UART_SendChar('\r');
+	UART_SendChar('\n');
 
     while(1)
     {
-        // Read Button pin current status
-        uint8_t current_pin_val = GPIOC_ReadPin(BUTTON_PIN);
+    	// Blocking while waiting input from PC
+        char rx_byte = UART_ReceiveChar();
 
-        // Using FSM Debounce (Non-blocking)
-        if (Button_Update_FSM(current_pin_val)) {
-        	// Action 1: Toggle LED
-			GPIO_TogglePin(LED_PIN);
+        // Sending char
+        UART_SendChar(rx_byte);
 
-			UART_SendChar('B');
-        }
+        // Controlling actuator, based on PC input
+        if (rx_byte == '1') {
+			GPIOA_WritePin(LED_PIN, 1); // LED ON
+		} else if (rx_byte == '0') {
+			GPIOA_WritePin(LED_PIN, 0); // LED OFF
+		}
 
-        // Very short sampling delay for the FSM tick (e.g., ~1ms - 5ms)
-        Delay_Simple(2000);
     }
 }
