@@ -1,0 +1,157 @@
+#include "stm32f401_gpio.h"
+
+void validatePin(uint8_t pin) {
+    if (pin > 15) return;
+}
+
+void GPIO_Set2BitField(volatile uint32_t *reg, uint8_t pin, uint32_t value) {
+    uint32_t mask = (3UL << (pin * 2UL));
+    *reg &= ~mask;
+    *reg |= (value << (pin * 2UL));
+}
+
+void RCC_EnableGPIOClock(void) {
+    RCC_AHB1ENR |= RCC_GPIOA_EN | RCC_GPIOC_EN;
+}
+
+void GPIO_SetMode(volatile uint32_t *MODER_reg, uint8_t pin, uint32_t mode) {
+    GPIO_Set2BitField(MODER_reg, pin, mode);
+}
+
+void GPIOA_SetOutputOtype(uint8_t pin, uint32_t type) {
+    validatePin(pin);
+    GPIOA->OTYPER &= ~(1UL << pin);
+    GPIOA->OTYPER |= ((type & 0x01UL) << pin);
+}
+
+void GPIOA_SetPullUpDown(uint8_t pin, uint32_t state) {
+    GPIO_Set2BitField(&GPIOA->PUPDR, pin, state);
+}
+
+void GPIO_WritePin(GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t state)
+{
+    validatePin(pin);
+
+    if (state) {
+        // Atomic Set: Shift 1 to bit (0-15) for HIGH
+        GPIOx->BSRR = (1UL << pin);
+    } else {
+        // Atomic Reset: Shift 1 to (16-31) for LOW
+        GPIOx->BSRR = (1UL << (pin + 16));
+    }
+}
+
+void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint8_t pin)
+{
+    validatePin(pin);
+
+    // Status checking ODR bit
+    if (GPIOx->ODR & (1UL << pin)) {
+        // if HIGH, change to LOW via BSRR (Upper 16 bits)
+        GPIOx->BSRR = (1UL << (pin + 16UL));
+    } else {
+        // if LOW, change to HIGH via BSRR (Lower 16 bits)
+        GPIOx->BSRR = (1UL << pin);
+    }
+}
+
+void Delay_Simple(uint32_t count) {
+    for(volatile uint32_t i = 0; i < count; i++);
+}
+
+uint8_t GPIOC_ReadPin(uint8_t pin) {
+    validatePin(pin);
+    if ((GPIOC->IDR & (1UL << pin)) != 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+ButtonState_t get_button_state(uint8_t pin) {
+    validatePin(pin);
+    if (GPIOC_ReadPin(pin) == 0) {
+        return BUTTON_PRESSED;
+    }
+    return BUTTON_RELEASED;
+}
+
+bool Button_Update_FSM(uint8_t current_pin_level) {
+    static ButtonState_t button_state = BUTTON_RELEASED;
+    static uint32_t debounce_counter = 0;
+
+    bool press_event = false;
+
+    switch (button_state) {
+        case BUTTON_RELEASED:
+            if (current_pin_level == 0) {
+                debounce_counter = 0;
+                button_state = BUTTON_DEBOUNCING_DOWN;
+            }
+            break;
+
+        case BUTTON_DEBOUNCING_DOWN:
+            if (current_pin_level == 0) {
+                debounce_counter++;
+                if (debounce_counter >= DEBOUNCE_THRESHOLD_TICKS) {
+                    button_state = BUTTON_PRESSED;
+                    press_event = true;
+                }
+            } else {
+                button_state = BUTTON_RELEASED;
+            }
+            break;
+
+        case BUTTON_PRESSED:
+            if (current_pin_level == 1) {
+                debounce_counter = 0;
+                button_state = BUTTON_DEBOUNCING_UP;
+            }
+            break;
+
+        case BUTTON_DEBOUNCING_UP:
+            if (current_pin_level == 1) {
+                debounce_counter++;
+                if (debounce_counter >= DEBOUNCE_THRESHOLD_TICKS) {
+                    button_state = BUTTON_RELEASED;
+                }
+            } else {
+                button_state = BUTTON_PRESSED;
+            }
+            break;
+    }
+
+    return press_event;
+}
+
+void GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_Init_t *init) {
+    validatePin(init->Pin);
+
+    // 1. Set Mode
+    GPIO_Set2BitField(&GPIOx->MODER, init->Pin, init->Mode);
+
+    // 2. Set Output Type
+    if (init->Mode == GPIO_MODE_OUTPUT) {
+        GPIOx->OTYPER &= ~(1UL << init->Pin);
+        GPIOx->OTYPER |= ((init->OType & 0x01UL) << init->Pin);
+    }
+
+    // 3. Set Pull-Up / Pull-Down
+    GPIO_Set2BitField(&GPIOx->PUPDR, init->Pin, init->Pull);
+}
+
+void GPIO_SetAltFunction(GPIO_TypeDef *GPIOx, uint8_t pin, uint8_t af_value) {
+    validatePin(pin);
+
+    // Pin 0..7 = index 0 (AFRL), Pin 8..15 = index 1 (AFRH)
+    uint8_t afr_index = pin / 8;
+
+    // count 4-bit field shift to target register
+    uint8_t bit_shift = (pin % 8) * 4;
+
+    // 1. Clear 4-bit field first
+    GPIOx->AFR[afr_index] &= ~(0x0FUL << bit_shift);
+
+    // 2. Set a new alternate Function value
+    GPIOx->AFR[afr_index] |= ((uint32_t)(af_value & 0x0FUL) << bit_shift);
+}
