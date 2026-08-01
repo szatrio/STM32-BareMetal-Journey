@@ -33,56 +33,6 @@ int main(void)
 
     UART_Println("=== Buffer Overflow Error Handling Test ===");
 
-//    // Verify initial state of Head and Tail
-//    if (rx_buffer.head == 0 && rx_buffer.tail == 0) {
-//        UART_Println("[SUCCESS] Ring Buffer Initialized (head=0, tail=0)");
-//    } else {
-//        UART_Println("[ERROR] Ring Buffer Initialization Failed!");
-//    }
-//
-//    UART_Println("\r\n--- Testing RingBuffer Push and Pop ---");
-//
-//	// Testing push chars
-//	RingBuffer_Push(&rx_buffer, 'A');
-//	RingBuffer_Push(&rx_buffer, 'B');
-//	RingBuffer_Push(&rx_buffer, 'C');
-//	RingBuffer_Push(&rx_buffer, 'D');
-//	RingBuffer_Push(&rx_buffer, 'E');
-//	UART_Println("[SUCCESS] Pushed ABCDE to Ring Buffer");
-//
-//	uint8_t popped_char = 0;
-//
-//	if (RingBuffer_Pop(&rx_buffer, &popped_char) && popped_char == 'A') {
-//		UART_Println("[SUCCESS] 1st Pop returned 'A' (First-In, First-Out Passed!)");
-//	} else {
-//		UART_Println("[ERROR] 1st Pop Failed!");
-//	}
-//
-//	if (RingBuffer_Pop(&rx_buffer, &popped_char) && popped_char == 'B') {
-//		UART_Println("[SUCCESS] 2nd Pop returned 'B'");
-//	}
-//
-//	if (RingBuffer_Pop(&rx_buffer, &popped_char) && popped_char == 'C') {
-//		UART_Println("[SUCCESS] 3rd Pop returned 'C'");
-//	}
-//
-//	if (RingBuffer_Pop(&rx_buffer, &popped_char) && popped_char == 'D') {
-//			UART_Println("[SUCCESS] 4th Pop returned 'D'");
-//		}
-//
-//	if (RingBuffer_Pop(&rx_buffer, &popped_char) && popped_char == 'E') {
-//		UART_Println("[SUCCESS] 5th Pop returned 'E'");
-//	}
-//
-//	UART_Println("\r\n--- Test Underflow Protection ---");
-//
-//	// Trying to pop on empty buffer (head == tail)
-//	if (!RingBuffer_Pop(&rx_buffer, &popped_char)) {
-//		UART_Println("[SUCCESS] Pop rejected! Buffer is empty (Underflow Protected).");
-//	} else {
-//		UART_Println("[ERROR] Pop succeeded on empty buffer!");
-//	}
-
     UART_Println("Pushing 63 bytes to fill buffer exactly...");
 	for (int i = 0; i < 63; i++) {
 		RingBuffer_Push(&rx_buffer, 'A' + (i % 26)); // Push A-Z chars repeatedly
