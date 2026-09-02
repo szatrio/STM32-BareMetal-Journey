@@ -1,7 +1,6 @@
 # STM32 Bare-Metal Journey 🚀
 
-A disciplined, hands-on journey mastering **bare-metal firmware development** on the **STM32F401RE (ARM Cortex-M4)** microcontroller. This repository documents a step-by-step progress from raw register manipulation to drivers, hardware interrupts, ring buffers, and SysTick timekeeping.
-
+A disciplined, hands-on journey mastering **bare-metal firmware development** on the **STM32F401RE (ARM Cortex-M4)** microcontroller.
 ---
 
 ##  Hardware & Toolchain Specifications
