@@ -1,7 +1,6 @@
 # STM32 Bare-Metal Journey 🚀
 
 A disciplined, hands-on journey mastering **bare-metal firmware development** on the **STM32F401RE (ARM Cortex-M4)** microcontroller.
----
 
 ##  Hardware & Toolchain Specifications
 
