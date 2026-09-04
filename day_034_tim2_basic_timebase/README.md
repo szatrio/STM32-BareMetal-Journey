@@ -17,8 +17,8 @@ Configure and initialize the **TIM2 32-bit Hardware General-Purpose Timer** on t
 +-----------------------------------------------------------------------+
 |                      TIM2 Hardware Peripheral                         |
 |                                                                       |
-|  Prescaler (PSC = 15999)    -->  TIM2 Tick Clock = 1,000 Hz (1 ms)  |
-|  Auto-Reload (ARR = 499)    -->  Overflow Period = 500 ms            |
+|  Prescaler (PSC = 15999)    -->  TIM2 Tick Clock = 1,000 Hz (1 ms)    |
+|  Auto-Reload (ARR = 499)    -->  Overflow Period = 500 ms             |
 |                                                                       |
 |  [Counter: 0 -> 499] ----> Sets Update Interrupt Flag (TIM2_SR_UIF)   |
 +-----------------------------------------------------------------------+
