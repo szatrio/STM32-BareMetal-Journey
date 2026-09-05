@@ -16,11 +16,15 @@ int main(void) {
     UART_Print("\r\n=== TIM2 Hardware PWM Generation Started ===\r\n");
 
     // 2. Configure PA5 (LED) as Alternate Function Mode (AF01 = TIM2_CH1)
-    GPIOA->MODER &= ~(3UL << (LED_PIN * 2));
-    GPIOA->MODER |=  (GPIO_MODE_ALT << (LED_PIN * 2));
+    GPIO_Init_t led_config = {
+		.Pin  = LED_PIN,
+		.Mode = GPIO_MODE_ALT,
+		.Pull = GPIO_NOPULL
+	};
+	GPIO_Init(GPIOA, &led_config);
 
-    GPIOA->AFR[0] &= ~(0xFUL << (LED_PIN * 4));
-    GPIOA->AFR[0] |=  (1UL << (LED_PIN * 4)); // AF01 mapping for TIM2_CH1
+	// Set AF01 (0x01) for TIM2_CH1 mapping on PA5
+	GPIO_SetAltFunction(GPIOA, LED_PIN, 1);
 
     // 3. Initialize TIM2 PWM: 16 MHz / 16 = 1 MHz Tick Clock (1 us)
     // ARR = 1000 -> PWM Period = 1000 us (1 ms) -> PWM Frequency = 1 kHz
