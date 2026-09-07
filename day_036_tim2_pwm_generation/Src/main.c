@@ -19,7 +19,7 @@ int main(void) {
     GPIO_Init_t led_config = {
 		.Pin  = LED_PIN,
 		.Mode = GPIO_MODE_ALT,
-		.Pull = GPIO_NOPULL
+		.Pull = GPIO_PUPDR_NOPULLUPDOWN
 	};
 	GPIO_Init(GPIOA, &led_config);
 
