@@ -24,7 +24,7 @@ Design and implement a modular, register-level ADC1 (Analog-to-Digital Converter
 +-----------------------------------------------------------------------+
 |                         STM32F4 ADC1 Peripheral                       |
 |  1. Enable Clock: RCC->APB2ENR |= RCC_APB2ENR_ADC1EN                  |
-|  2. Select Channel: SQR3 (SQ1[4:0] = Channel 0)                        |
+|  2. Select Channel: SQR3 (SQ1[4:0] = Channel 0)                       |
 |  3. Power ON: CR2 |= ADC_CR2_ADON                                     |
 |  4. Trigger Conversion: CR2 |= ADC_CR2_SWSTART                        |
 +-----------------------------------------------------------------------+

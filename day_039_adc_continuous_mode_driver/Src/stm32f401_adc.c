@@ -9,18 +9,20 @@ void ADC1_Init(uint8_t channel) {
     ADC1->SQR3 &= ~(0x1F << ADC_SQR3_SQ1_POS);
     ADC1->SQR3 |= ((channel & 0x1F) << ADC_SQR3_SQ1_POS);
 
-    // 3. ADC1 (Power ON) via bit ADON at CR2
+    // 3. CR2 Configuration: Enable Continuous Mode & Power ON ADC
+    ADC1->CR2 |= ADC_CR2_CONT;
     ADC1->CR2 |= ADC_CR2_ADON;
 }
 
-uint16_t ADC1_Read(void) {
-    // 1. Trigger convertion via software (SWSTART)
+void ADC1_StartConversion(void) {
     ADC1->CR2 |= ADC_CR2_SWSTART;
+}
 
-    // 2. Polling flag EOC (End of Conversion) in SR until value is 1
+uint16_t ADC1_Read(void) {
+    // 1. Polling flag EOC (End of Conversion) in SR until value is 1
     while (!(ADC1->SR & ADC_SR_EOC));
 
-    // 3. Return data convertion result 12-bit from DR
+    // 2. Return data convertion result 12-bit from DR
     // (Reading DR is automacally clean EOC flag in hardware)
     return (uint16_t)(ADC1->DR & 0xFFF);
 }
