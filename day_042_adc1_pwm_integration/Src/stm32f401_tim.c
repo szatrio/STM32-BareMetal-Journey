@@ -64,30 +64,60 @@ void TIM2_IRQHandler(void) {
     }
 }
 
-void TIM2_PWM_CH1_Init(uint16_t prescaler, uint32_t auto_reload) {
+void TIM2_PWM_Init(uint8_t channel, uint16_t prescaler, uint32_t auto_reload) {
     // 1. Enable TIM2 peripheral clock
     RCC_APB1ENR |= RCC_APB1ENR_TIM2EN;
 
-    // 2. Configure timer timebase parameters
+    // 2. Configure timer timebase parameters (Shared across channels)
     TIM2->PSC = prescaler - 1;
     TIM2->ARR = auto_reload - 1;
 
-    // 3. Configure CCMR1 for PWM Mode 1 and enable preload register
-    TIM2->CCMR1 &= ~(7UL << 4);              // Clear Output Compare 1 Mode (OC1M) bits
-    TIM2->CCMR1 |= TIM_CCMR1_OC1M_PWM1;      // Set PWM Mode 1 (110)
-    TIM2->CCMR1 |= TIM_CCMR1_OC1PE;          // Enable Output Compare 1 Preload
+    // 3. Configure Output Compare Mode, Preload, and Enable based on target channel
+    switch (channel) {
+        case 1:
+            // CCMR1: CH1 bits (OC1M at bit 6:4, OC1PE at bit 3)
+            TIM2->CCMR1 &= ~(7UL << 4);
+            TIM2->CCMR1 |= TIM_CCMR1_OC1M_PWM1; // PWM Mode 1 (110)
+            TIM2->CCMR1 |= TIM_CCMR1_OC1PE;     // Enable Preload
+            TIM2->CCER  |= TIM_CCER_CC1E;       // Enable CC1 output
+            break;
 
-    // 4. Enable Output Channel 1 in Capture/Compare Enable Register
-    TIM2->CCER |= TIM_CCER_CC1E;
+        case 2:
+            // CCMR1: CH2 bits (OC2M at bit 14:12, OC2PE at bit 11)
+            TIM2->CCMR1 &= ~(7UL << 12);
+            TIM2->CCMR1 |=  (6UL << 12);        // PWM Mode 1 for CH2 (110)
+            TIM2->CCMR1 |=  (1UL << 11);        // Enable Preload for CH2
+            TIM2->CCER  |=  (1UL << 4);         // Enable CC2 output (CC2E)
+            break;
 
-    // 5. Force an update event to reload Prescaler and ARR values immediately
+        case 3:
+            // CCMR2: CH3 bits (OC3M at bit 6:4, OC3PE at bit 3)
+            TIM2->CCMR2 &= ~(7UL << 4);
+            TIM2->CCMR2 |=  (6UL << 4);         // PWM Mode 1 for CH3 (110)
+            TIM2->CCMR2 |=  (1UL << 3);         // Enable Preload for CH3
+            TIM2->CCER  |=  (1UL << 8);         // Enable CC3 output (CC3E)
+            break;
+
+        case 4:
+            // CCMR2: CH4 bits (OC4M at bit 14:12, OC4PE at bit 11)
+            TIM2->CCMR2 &= ~(7UL << 12);
+            TIM2->CCMR2 |=  (6UL << 12);        // PWM Mode 1 for CH4 (110)
+            TIM2->CCMR2 |=  (1UL << 11);        // Enable Preload for CH4
+            TIM2->CCER  |=  (1UL << 12);        // Enable CC4 output (CC4E)
+            break;
+
+        default:
+            return; // Invalid channel
+    }
+
+    // 4. Force an update event to reload Prescaler and ARR values immediately
     TIM2->EGR |= TIM_EGR_UG;
 
-    // 6. Start counter
+    // 5. Start counter
     TIM2->CR1 |= TIM_CR1_CEN;
 }
 
-void TIM2_PWM_SetDutyCycle(float percent) {
+void TIM2_PWM_SetDutyCycle(uint8_t channel, float percent) {
     // 1. Clamp input percentage to safe operating bounds (0.0% to 100.0%)
     if (percent < 0.0f) {
         percent = 0.0f;
@@ -98,11 +128,15 @@ void TIM2_PWM_SetDutyCycle(float percent) {
     // 2. Retrieve active Auto-Reload Register (ARR) value from hardware
     uint32_t arr_val = TIM2->ARR;
 
-    // 3. Compute target Compare Register (CCR1) value based on percentage formula
-    // Formula: CCR1 = (percent * ARR) / 100.0f
-    // Catatan: Gunakan (float)arr_val tanpa (+ 1) agar CCR1 tidak pernah melampaui ARR
+    // 3. Compute target Compare Register value based on percentage formula
     uint32_t ccr_val = (uint32_t)((percent * (float)arr_val) / 100.0f);
 
-    // 4. Update the Capture/Compare Register 1
-    TIM2->CCR1 = ccr_val;
+    // 4. Update the respective Capture/Compare Register based on the channel
+    switch (channel) {
+        case 1: TIM2->CCR1 = ccr_val; break;
+        case 2: TIM2->CCR2 = ccr_val; break;
+        case 3: TIM2->CCR3 = ccr_val; break;
+        case 4: TIM2->CCR4 = ccr_val; break;
+        default: break;
+    }
 }

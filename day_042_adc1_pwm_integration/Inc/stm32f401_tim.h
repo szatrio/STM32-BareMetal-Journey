@@ -25,16 +25,17 @@ void TIM2_Timebase_IT_Init(uint16_t psc, uint32_t arr);
 uint8_t TIM2_Has_Update_Occurred(void);
 
 /**
- * @brief  Initializes TIM2 Channel 1 for PWM Generation (PWM Mode 1).
+ * @brief  Initializes TIM2 for PWM Generation (PWM Mode 1) on a specified channel.
+ * @param  channel: Timer channel number (1, 2, 3, or 4).
  * @param  prescaler: Prescaler value to divide the peripheral input clock.
  * @param  auto_reload: Auto-Reload Register (ARR) value defining the PWM period.
  */
-void TIM2_PWM_CH1_Init(uint16_t prescaler, uint32_t auto_reload);
+void TIM2_PWM_Init(uint8_t channel, uint16_t prescaler, uint32_t auto_reload);
 
 /**
- * @brief  Updates the PWM Duty Cycle for TIM2 Channel 1 using a percentage input.
+ * @brief  Updates the PWM Duty Cycle for a specified TIM2 channel using a percentage input.
+ * @param  channel: Timer channel number (1, 2, 3, or 4).
  * @param  percent: Duty cycle percentage (0.0f to 100.0f).
  */
-void TIM2_PWM_SetDutyCycle(float percent);
-
+void TIM2_PWM_SetDutyCycle(uint8_t channel, float percent);
 #endif

@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #define ADC_PIN 0 // PA0 mapped to ADC1_IN0
-#define PWM_PIN 1 // PA1 mapped to TIM2_CH1 (PWM Output)
+#define PWM_PIN 1 // PA1 mapped to TIM2_CH2 (PWM Output)
 
 // Timeout guard limit for EOC polling
 #define ADC_TIMEOUT_LOOPS      500000U
@@ -54,21 +54,22 @@ int main(void) {
     };
     GPIO_Init(GPIOA, &adc_pin_config);
 
-    // 4. Configure PA1 Pin as Alternate Function for PWM Output (TIM2_CH1)
+    // 4. Configure PA1 Pin as Alternate Function for PWM Output (TIM2_CH2)
 	GPIO_Init_t pwm_pin_config = {
 		.Pin  = PWM_PIN,
-		.Mode = GPIO_MODE_ALTFUNC,
+		.Mode = GPIO_MODE_ALT,
 		.Pull = GPIO_PUPDR_NOPULLUPDOWN
 	};
 	GPIO_Init(GPIOA, &pwm_pin_config);
+	GPIO_SetAltFunction(GPIOA, PWM_PIN, 1);
 
     // 5. Initialize ADC1 Peripheral (Sequence SQ1 = Channel 0, ADON = 1, LEFT Alignment)
     ADC1_InitWithAlignment(0, ADC_ALIGN_LEFT);
     ADC1_StartConversion();
 
-    // 6. Initialize TIM2 PWM Channel 1
+    // 6. Initialize TIM2 PWM Channel 2
 	// Frequency formula: 16 MHz / ((PSC + 1) * (ARR + 1)) -> 16MHz / (16 * 1000) = 1 kHz
-	TIM2_PWM_CH1_Init(16, 1000);
+    TIM2_PWM_Init(2, 16, 1000);
 
 	// 7. Main loop: Harvest ADC, map to PWM, and stream telemetry
 	while (1) {
@@ -91,8 +92,8 @@ int main(void) {
 			// Map 12-bit ADC range to PWM Duty Cycle percentage (0.0% - 100.0%)
 			duty_cycle = ((float)adc_12bit / 4095.0f) * 100.0f;
 
-			// Apply duty cycle to hardware Timer 2 register
-			TIM2_PWM_SetDutyCycle(duty_cycle);
+			// Apply duty cycle to hardware Timer 2 Channel 2 register
+			TIM2_PWM_SetDutyCycle(2, duty_cycle);
 
 			// Stream telemetry data over UART
 			Format_ADC_PWM_ToString(uart_buf, sizeof(uart_buf), adc_12bit, voltage, duty_cycle);
@@ -102,3 +103,4 @@ int main(void) {
 		SysTick_DelayMs(100);
 	}
 }
+
