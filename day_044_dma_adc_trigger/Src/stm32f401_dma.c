@@ -10,7 +10,7 @@ void DMA_Stream_Init(DMA_Stream_TypeDef *dma_stream,
     if ((uint32_t)dma_stream >= DMA2_BASE) {
         RCC_AHB1ENR |= RCC_AHB1ENR_DMA2EN;
     } else {
-        RCC_AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+    	RCC_AHB1ENR |= RCC_AHB1ENR_DMA1EN;
     }
 
     // 2. Ensure the Stream is disabled before configuration

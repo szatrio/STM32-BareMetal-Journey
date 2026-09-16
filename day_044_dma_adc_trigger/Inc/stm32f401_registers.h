@@ -227,10 +227,12 @@ typedef struct {
 #define ADC_SR_EOC            (1UL << 1)   // Bit 1: End of conversion flag
 #define ADC_SR_OVR            (1UL << 5)   // Bit 5: Overrun flag
 #define ADC_CR2_ADON          (1UL << 0)   // Bit 0: A/D Converter ON / OFF
-#define ADC_CR2_EOCS		  (1UL << 10)  // Bit 10: Overrun detection is enabled
+#define ADC_CR2_CONT          (1UL << 1)   // Bit 1: Continuous Conversion
+#define ADC_CR2_DMA           (1UL << 8)   // Bit 8: Direct memory access mode enable (Trigger DMA)
+#define ADC_CR2_DDS           (1UL << 9)   // Bit 9: DMA disable selection (1 = Keep DMA requests active)
+#define ADC_CR2_EOCS          (1UL << 10)  // Bit 10: End of conversion selection / Overrun detection
 #define ADC_CR2_SWSTART       (1UL << 30)  // Bit 30: Start conversion of regular channels
 #define ADC_SQR3_SQ1_POS      0U           // Bits 4:0 - 1st conversion in regular sequence
-#define ADC_CR2_CONT    	  (1U << 1)    // Bit 1: Continuous Conversion
 
 // --- ADC Register Bit Alignment ---
 #define ADC_CR2_ALIGN_POS     (11U)
