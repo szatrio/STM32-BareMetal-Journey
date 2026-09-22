@@ -24,8 +24,10 @@ void I2C1_Init(void) {
     GPIOB->AFR[0] &= ~((0xFUL << (6 * 4)) | (0xFUL << (7 * 4)));
     GPIOB->AFR[0] |=  ((4UL << (6 * 4)) | (4UL << (7 * 4)));
 
-    // 3. Reset and disable I2C1 peripheral before configuration
-    I2C1->CR1 &= ~I2C_CR1_PE;
+    // 3. Reset and disable I2C1 peripheral state machine
+    I2C1->CR1 |= (1UL << 15);   // Set SWRST (Software Reset)
+    I2C1->CR1 &= ~(1UL << 15);  // Clear SWRST
+    I2C1->CR1 &= ~I2C_CR1_PE;   // Disable I2C1 peripheral
 
     // 4. Set Peripheral Clock Frequency in CR2 (HSI = 16 MHz)
     I2C1->CR2 &= ~I2C_CR2_FREQ_MASK;
@@ -49,26 +51,22 @@ void I2C1_Init(void) {
 }
 
 // Generate START condition on I2C bus
-void I2C1_Start(void) {
+void I2C_Start(I2C_TypeDef *I2Cx) {
     // 1. Generate START condition
-    I2C1->CR1 |= I2C_CR1_START;
+    I2Cx->CR1 |= I2C_CR1_START;
 
     // 2. Wait until Start Bit (SB) flag is set in SR1 register
-    while (!(I2C1->SR1 & I2C_SR1_SB));
+    while (!(I2Cx->SR1 & I2C_SR1_SB));
 }
 
 // Generate STOP condition on I2C bus
-void I2C1_Stop(void) {
+void I2C_Stop(I2C_TypeDef *I2Cx) {
     // Generate STOP condition
-    I2C1->CR1 |= I2C_CR1_STOP;
+    I2Cx->CR1 |= I2C_CR1_STOP;
 }
 
 /**
  * @brief  Write multiple bytes to a slave device on I2C bus
- * @param  I2Cx: Pointer to I2C peripheral base address
- * @param  slave_addr: 7-bit slave address
- * @param  pData: Pointer to data buffer to transmit
- * @param  len: Number of bytes to transfer
  */
 void I2C_WriteData(I2C_TypeDef *I2Cx, uint8_t slave_addr, uint8_t *pData, uint32_t len)
 {
@@ -78,8 +76,16 @@ void I2C_WriteData(I2C_TypeDef *I2Cx, uint8_t slave_addr, uint8_t *pData, uint32
     // 2. Send 7-bit slave address with Write bit (R/W = 0)
     I2Cx->DR = (slave_addr << 1) & ~(1 << 0);
 
-    // 3. Wait until ADDR flag is set (Slave responded with ACK)
-    while (!(I2Cx->SR1 & (1 << 1)));
+    // 3. Wait until ADDR flag is set (Slave responded with ACK) or AF (NACK) occurs
+	while (!(I2Cx->SR1 & (1 << 1)))
+	{
+		if (I2Cx->SR1 & (1 << 10))
+		{
+			I2Cx->SR1 &= ~(1 << 10);
+			I2C_Stop(I2Cx);
+			return;
+		}
+	}
 
     // 4. Clear ADDR flag by reading SR1 followed by SR2
     uint32_t dummy_read = I2Cx->SR1;
