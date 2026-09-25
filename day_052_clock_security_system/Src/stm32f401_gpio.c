@@ -22,7 +22,7 @@ void GPIO_Set2BitField(volatile uint32_t *reg, uint8_t pin, uint32_t value) {
  * @brief Enables AHB1 clock for GPIOA and GPIOC peripherals.
  */
 void RCC_EnableGPIOClock(void) {
-    RCC_AHB1ENR |= RCC_GPIOA_EN | RCC_GPIOC_EN;
+    RCC_AHB1ENR |= RCC_GPIOA_EN | RCC_GPIOB_EN | RCC_GPIOC_EN;
 }
 
 /**
