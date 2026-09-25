@@ -2,7 +2,7 @@
 
 ### Objective
 
-Implement bare-metal Clock Security System (CSS) on the STM32F401RE to automatically monitor the High-Speed External (HSE) oscillator and establish a robust hardware fail-safe mechanism with HSI fallback and NMI handling.
+Implement bare-metal Clock Security System (CSS) on the STM32F401RE to automatically monitor the High-Speed External (HSE) oscillator, establish a robust hardware fail-safe mechanism with HSI fallback, and provide a clear dual-channel (Audio-Visual) feedback protocol.
 
 ### System Architecture & Signaling Pipeline
 
@@ -29,12 +29,13 @@ Implement bare-metal Clock Security System (CSS) on the STM32F401RE to automatic
                                    |
                                    v
 +-----------------------------------------------------------------------+
-|                    3. NMI ISR & Safety Handling                       |
+|                    3. Dual-Channel Feedback & NMI Handling            |
 |  - CPU jumps directly to NMI_Handler vector execution                 |
 |  - Clear CSS interrupt flag (CSSC) to prevent infinite loops          |
-|  - Execute fallback state / visual warning protocol via LED feedback  |
+|  - Route runtime state to Audio-Visual indicators (LED & Buzzer)      |
 +-----------------------------------------------------------------------+
 ```
+
 
 ### Key Technical Implementations
 
@@ -47,8 +48,11 @@ Implement bare-metal Clock Security System (CSS) on the STM32F401RE to automatic
 * **Automatic Hardware Fallback & NMI Integration**  
   Leveraged STM32 hardware architecture where a clock failure automatically switches the system clock to HSI, triggering the `NMI_Handler` to clear the CSS failure flag (`CSSC`) safely.
 
+* **Dual-Channel Status Feedback (Audio-Visual)**  
+  Implemented a stateful response loop: Normal operation (HSE active) maintains a solid state LED and an active status tone via buzzer, whereas Fallback mode (HSI active) mutes the buzzer and engages a continuous warning blink pattern on the LED.
+
 ---
 
 ### Conclusion
 
-Day 52 successfully establishes a high-reliability firmware foundation by adding a hardware-level safety net. By pairing CSS monitoring with automatic HSI clock fallback and NMI diagnostics, the STM32F401RE ensures continuous system availability even during external clock signal degradation.
+Day 52 successfully establishes a high-reliability firmware foundation by adding a hardware-level safety net and intuitive system diagnostics. By pairing CSS monitoring and HSI fallback with distinct audio-visual indicators, the STM32F401RE ensures clear operational feedback and continuous system availability even during external clock degradation.
