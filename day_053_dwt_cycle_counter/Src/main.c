@@ -5,17 +5,42 @@
 
 #define LED_PIN 5 // PA5 on Nucleo board
 
+// Helper function to print an unsigned 32-bit number via UART
+static void UART_PrintNumber(uint32_t num) {
+    char buf[16];
+    int i = 0;
+
+    if (num == 0) {
+        UART_SendChar('0');
+        return;
+    }
+
+    while (num > 0) {
+        buf[i++] = (char)('0' + (num % 10));
+        num /= 10;
+    }
+
+    while (i > 0) {
+        UART_SendChar(buf[--i]);
+    }
+}
+
 int main(void)
 {
+    // Enable FPU and initialize system clock (84 MHz)
     FPU_Enable();
     RCC_EnableGPIOClock();
+
+    // Initialize USART2 for debugging logs (115200 baud)
     USART2_Init(115200);
 
-    // Initialize DWT cycle counter for precise delays and profiling (pass 84 MHz core clock)
+    // Initialize DWT cycle counter
     if (!DWT_Delay_Init(84000000UL)) {
         UART_Println("Error: DWT initialization failed!");
     } else {
-        UART_Println("DWT Cycle Counter initialized successfully.");
+        UART_Println("========================================");
+        UART_Println("  STM32F401 DWT PERFORMANCE BENCHMARK   ");
+        UART_Println("========================================");
     }
 
     // Configure LED pin as push-pull output
@@ -27,24 +52,50 @@ int main(void)
     };
     GPIO_Init(GPIOA, &led_init);
 
-    UART_Println("Starting DWT performance profiling & delay test...");
+    // --- RUN BENCHMARK ONCE UPON BOOT ---
+    uint32_t start_cycles;
+    uint32_t cycles_wrapper, cycles_direct, cycles_int, cycles_float;
+
+    // 1. Benchmark Function Wrapper (GPIO_TogglePin)
+    start_cycles = DWT_GetCycleCount();
+    GPIO_TogglePin(GPIOA, LED_PIN);
+    cycles_wrapper = DWT_GetCycleCount() - start_cycles;
+
+    // 2. Benchmark Direct Register Access (BSRR)
+    start_cycles = DWT_GetCycleCount();
+    GPIOA->BSRR = (1UL << LED_PIN);         // Set pin HIGH
+    GPIOA->BSRR = (1UL << (LED_PIN + 16));  // Set pin LOW
+    cycles_direct = DWT_GetCycleCount() - start_cycles;
+
+    // 3. Benchmark Integer Multiplication (100 iterations)
+    start_cycles = DWT_GetCycleCount();
+    volatile int32_t a = 123, b = 456, res = 0;
+    for (int i = 0; i < 100; i++) {
+        res += a * b;
+    }
+    (void)res;
+    cycles_int = DWT_GetCycleCount() - start_cycles;
+
+    // 4. Benchmark Float Multiplication (100 iterations with FPU)
+    start_cycles = DWT_GetCycleCount();
+    volatile float fa = 123.45f, fb = 678.90f, fres = 0.0f;
+    for (int i = 0; i < 100; i++) {
+        fres += fa * fb;
+    }
+    (void)fres;
+    cycles_float = DWT_GetCycleCount() - start_cycles;
+
+    // Print all benchmark metrics to PuTTY once
+    UART_Print("1. GPIO Wrapper Toggle : "); UART_PrintNumber(cycles_wrapper); UART_Println(" cycles");
+    UART_Print("2. Direct Register BSRR: "); UART_PrintNumber(cycles_direct); UART_Println(" cycles");
+    UART_Print("3. Integer Math (100x) : "); UART_PrintNumber(cycles_int); UART_Println(" cycles");
+    UART_Print("4. Float Math (100x)   : "); UART_PrintNumber(cycles_float); UART_Println(" cycles");
+    UART_Println("========================================");
+    UART_Println("System entering normal operation loop...");
 
     while (1) {
-        // Record start cycles for profiling execution time
-        uint32_t start_cycles = DWT_GetCycleCount();
-
-        // Toggle LED state
+        // Toggle LED and delay safely without spamming serial terminal
         GPIO_TogglePin(GPIOA, LED_PIN);
-
-        // Record end cycles and compute elapsed ticks
-        uint32_t elapsed_cycles = DWT_GetCycleCount() - start_cycles;
-
-        // Print profiling result via UART
-        // (1 cycle at 84 MHz = ~11.9 nanoseconds)
-        UART_Print("LED toggle execution took cycles: ");
-        // Note: You can format numbers or print directly if print function supports it
-
-        // Precise 500 ms delay using DWT hardware cycle counter
         DWT_Delay_ms(500U);
     }
 }

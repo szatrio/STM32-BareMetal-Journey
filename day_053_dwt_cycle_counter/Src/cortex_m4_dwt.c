@@ -9,18 +9,18 @@ bool DWT_Delay_Init(uint32_t cpu_freq_hz) {
     // TRCENA (Trace Enable) in CoreDebug register for accessing DWT modules
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 
-    // Reset cycle counter
-    DWT_CYCCNT = 0UL;
+    // Reset cycle counter using DWT struct pointer
+    DWT->CYCCNT = 0UL;
 
-    //CYCCNTENA (Cycle Counter Enable) in DWT_CTRL register
-    DWT_CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    // CYCCNTENA (Cycle Counter Enable) in DWT_CTRL register
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
     // Validating whether DWT is actually active by checking whether register cycle counter is run or not
-    uint32_t startup_cycles = DWT_CYCCNT;
+    uint32_t startup_cycles = DWT->CYCCNT;
 
     // if persist 0, so failed unlocking DWT
     for (volatile uint32_t i = 0; i < 10UL; i++) {
-        if (DWT_CYCCNT != startup_cycles) {
+        if (DWT->CYCCNT != startup_cycles) {
             return true; // Successfully Activate
         }
     }
@@ -29,8 +29,8 @@ bool DWT_Delay_Init(uint32_t cpu_freq_hz) {
 }
 
 uint32_t DWT_GetCycleCount(void) {
-    // return 32-bit raw value from DWT_CYCCNT register
-    return DWT_CYCCNT;
+    // return 32-bit raw value from DWT CYCCNT register via struct pointer
+    return DWT->CYCCNT;
 }
 
 void DWT_Delay_us(uint32_t us) {
