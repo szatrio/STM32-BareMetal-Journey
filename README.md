@@ -66,6 +66,10 @@ Click on any day's link to explore the source code, implementation details, and 
 | **Day 030** | [day_030_systick_setup_registers](./day_030_systick_setup_registers) | SysTick Setup & Core Timer Registers (ARM Cortex-M) |
 | **Day 031** | [day_031_systick_handler_global_tick](./day_031_systick_handler_global_tick) | SysTick Exception Handler & Non-Blocking Delay Integration |
 | **Day 032** | [day_032_systick_delay_ms](./day_032_systick_delay_ms) | High-Precision SysTick Blocking Delay Driver |
+| **Day 033** | [day_033_systick_scheduler](./day_033_systick_scheduler) | Non-Blocking Co-operative SysTick Scheduler & Timeout Guard |
+| **Day 034** | [day_034_tim2_basic_timebase](./day_034_tim2_basic_timebase) | Bare-Metal TIM2 Hardware Timer Basic Timebase & Non-Blocking Polling |
+| **Day 035** | [day_035_tim2_interrupt](./day_035_tim2_interrupt) | Bare-Metal TIM2 Hardware Interrupt Architecture via ARM Cortex-M NVIC |
+| **Day 036** | [day_036_tim2_pwm_generation](./day_036_tim2_pwm_generation) | Day 036: Bare-Metal TIM2 Hardware PWM Generation via CCMR1 & CCER Architecture |
 
 ---
 
