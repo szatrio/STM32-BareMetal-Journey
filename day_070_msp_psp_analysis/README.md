@@ -1,54 +1,29 @@
-# Day 069: SPI Final Benchmark & Performance Profiling (Polling vs. DMA)
+# Day 070: MSP & PSP Stack Pointer Analysis and Switching
 
-### Objective
+###  Objective
+Understand and empirically validate the dual stack pointer architecture of the ARM Cortex-M4 processor. This milestone establishes the foundation for custom RTOS kernel development by analyzing how the CPU switches execution context between the Main Stack Pointer (**MSP**) and the Process Stack Pointer (**PSP**).
 
-Conclude the performance tuning milestone by conducting a rigorous, comparative benchmark between traditional CPU polling and the dual-stream DMA architecture on the STM32F401RE microcontroller. This milestone delivers empirical validation of the architectural efficiency gains, quantifying the massive reduction in CPU cycles and execution overhead for high-speed SPI communications.
+---
 
-### Hardware Wiring Setup
+###  Key Technical Implementations
+- **Core Intrinsics Helper (`cortex_m4_core.h`)**: Implemented inline assembly functions (`__get_MSP`, `__set_MSP`, `__get_PSP`, `__set_PSP`, `__get_CONTROL`, and `__set_CONTROL`) to interface directly with core special registers.
+- **Independent Stack Allocation**: Reserved a dedicated static memory array (`512 bytes`) to act as the task stack space for the Process Stack Pointer (PSP).
+- **Live Register Manipulation**: Dynamically modified the `CONTROL` register (`SPSEL` bit) via inline assembly to force Thread Mode execution to transition from MSP to PSP at runtime.
+- **UART Diagnostic Logging**: Configured USART2 (`115200` baud) to capture and stream real-time register states and stack pointer addresses before and after the transition.
 
+---
+
+###  Terminal Diagnostic Output
 ```text
-+-----------------------------------------------------------------------+
-|       STM32F401RE Final SPI Benchmark & Profiling Setup               |
-+-----------------------------------------------------------------------+
-|                                                                       |
-|   +---------------------------------------------------------------+   |
-|   |                       STM32F401RE SPI1                        |   |
-|   |                                                               |   |
-|   |   [PA5] SCK  ----------------------------------- (Open/Float) |   |
-|   |                                                               |   |
-|   |   [PA7] MOSI -----------------+                               |   |
-|   |                               | (Physical Jumper Loopback)    |   |
-|   |   [PA6] MISO <----------------+                               |   |
-|   |                                                               |   |
-|   |   [GND] ---------------------------------------- (Common GND) |   |
-|   +---------------------------------------------------------------+   |
-|                                                                       |
-|   * Note: Debugging logs sent via USART2 (115200 Baud)                |
-+-----------------------------------------------------------------------+
-```
-### Key Technical Implementations
-
-- **Comparative Execution Profiling via DWT**
-  - Integrated the Cortex-M4 DWT cycle counter to measure and contrast the exact CPU clock consumption between blocking CPU polling and non-blocking DMA triggering across an identical 256-byte **SPI** transfer payload.
-
-- **Empirical Efficiency Quantization**
-  - Captured precise metrics proving that **SPI** DMA dual-stream execution slashes CPU overhead from **46,886 cycles** down to just **24 cycles**, achieving a dramatic **~1,953x efficiency gain**.
-
-- **Sequential Dual-Method Execution**
-  - Structured `main.c` to sequentially execute the CPU polling **SPI** transmission stream and the DMA dual-stream transfer within a unified test session for direct, side-by-side terminal verification.
-
-- **Real-Time UART Diagnostic Reporting**
-  - Formatted and transmitted comprehensive **SPI** profiling summaries via USART2 at 115200 baud, outputting exact cycle counts, execution times in microseconds, and computed speedup ratios.
-```
 ==================================================
-STM32F401 DAY 69: SPI FINAL BENCHMARK & PROFILING
+STM32F401 DAY 70: MSP & PSP STACK ANALYSIS
 ==================================================
-[BENCHMARK] Payload Size      : 256 Bytes
-[BENCHMARK] Polling Cycles    : 46886 cycles (558.17 us)
-[BENCHMARK] DMA Trigger Cycles: 24 cycles (0.29 us)
-[RESULT] Efficiency Gain      : ~1953ux fewer CPU cycles!
-==================================================
+[INFO] Initial state (Default Thread Mode -> MSP):
+[INFO] MSP: 0x20017F40 | PSP: 0x00000000 | CONTROL: 0x00000000
+[INFO] Switched to PSP via CONTROL register:
+[INFO] MSP: 0x20017FE0 | PSP: 0x20017F40 | CONTROL: 0x00000002
 ```
 
 ### Conclusion
-Day 069 successfully crowns the SPI DMA performance tuning journey with definitive empirical proof. By demonstrating a ~1,953x reduction in CPU cycle consumption for a 256-byte SPI transfer, the project conclusively validates that offloading data movement to the DMA controller frees up the processor entirely, setting a robust foundation for building high-performance, real-time embedded applications.
+
+Day 070 successfully lays the foundational brick for custom RTOS kernel development by validating the dual stack pointer architecture of the ARM Cortex-M4. By empirically demonstrating the live transition from the Main Stack Pointer (MSP) to the Process Stack Pointer (PSP) via the CONTROL register manipulation, this milestone proves that application threads can be safely isolated in their own private stack frames.

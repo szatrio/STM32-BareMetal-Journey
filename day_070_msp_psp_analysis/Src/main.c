@@ -1,110 +1,52 @@
-#include "stm32f401_system.h"
-#include "stm32f401_gpio.h"
-#include "stm32f401_usart.h"
-#include "stm32f401_spi.h"
-#include "stm32f401_dma.h"
-#include "cortex_m4_dwt.h"
-#include <string.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
+#include "stm32f401_usart.h"
+#include "cortex_m4_core.h"
 
-#define SPI1_PORT       GPIOA
-#define SPI1_PIN_SCK    5
-#define SPI1_PIN_MISO   6
-#define SPI1_PIN_MOSI   7
-#define SPI1_AF_VALUE   5
+// Independent stack allocation for PSP (512 bytes)
+#define TASK_STACK_SIZE   128U
+static uint32_t s_task_stack[TASK_STACK_SIZE];
 
-#define BUFFER_SIZE     256
+/**
+ * @brief Print current stack pointers and CONTROL register values via UART.
+ */
+static void print_stack_info(void) {
+    uint32_t msp_val = __get_MSP();
+    uint32_t psp_val = __get_PSP();
+    uint32_t control_val = __get_CONTROL();
+
+    char buf[128];
+    snprintf(buf, sizeof(buf), "[INFO] MSP: 0x%08lX | PSP: 0x%08lX | CONTROL: 0x%08lX\r\n",
+             msp_val, psp_val, control_val);
+    UART_Print(buf);
+}
 
 int main(void) {
-    // Init system, clock, and DWT
-    FPU_Enable();
-    RCC_EnableGPIOClock();
-    DWT_Delay_Init(84000000UL);
-
-    // Init UART for debug log
-    USART2_Init(115200);
-
+    // Initialize USART2 for diagnostic logs (115200 baud)
+	USART2_Init(115200);
     UART_Println("==================================================");
-    UART_Println("STM32F401 DAY 69: SPI FINAL BENCHMARK & PROFILING");
+    UART_Println("STM32F401 DAY 70: MSP & PSP STACK ANALYSIS");
     UART_Println("==================================================");
 
-    // Configure SPI GPIO pins
-    GPIO_Init_t spi_pin_init = {
-        .Mode  = GPIO_MODE_ALT,
-        .OType = GPIO_OTYPE_PUSHPULL,
-        .Pull  = GPIO_PUPDR_NOPULLUPDOWN
-    };
+    // Initial state: Thread mode runs on MSP by default
+    UART_Println("[STATE] Initial state (Default Thread Mode -> MSP):");
+    print_stack_info();
 
-    spi_pin_init.Pin = SPI1_PIN_SCK;  GPIO_Init(SPI1_PORT, &spi_pin_init);
-    spi_pin_init.Pin = SPI1_PIN_MISO; GPIO_Init(SPI1_PORT, &spi_pin_init);
-    spi_pin_init.Pin = SPI1_PIN_MOSI; GPIO_Init(SPI1_PORT, &spi_pin_init);
+    // Set top of stack for PSP (grows downward from high address)
+    uint32_t psp_top = (uint32_t)(&s_task_stack[TASK_STACK_SIZE]);
+    __set_PSP(psp_top);
 
-    GPIO_SetAltFunction(SPI1_PORT, SPI1_PIN_SCK,  SPI1_AF_VALUE);
-    GPIO_SetAltFunction(SPI1_PORT, SPI1_PIN_MISO, SPI1_AF_VALUE);
-    GPIO_SetAltFunction(SPI1_PORT, SPI1_PIN_MOSI, SPI1_AF_VALUE);
+    // Switch Thread mode stack pointer to PSP by setting CONTROL[1]
+    uint32_t control = __get_CONTROL();
+    control |= (1U << 1);  // Set SPSEL bit
+    __set_CONTROL(control);
 
-    // Init SPI1 as master
-    SPI1_Init();
-    SPI1_Config(SPI_BAUDRATE_DIV16, SPI_CPOL_LOW, SPI_CPHA_1EDGE, 1);
+    // Validate state after switching to PSP
+    UART_Println("[STATE] Switched to PSP via CONTROL register:");
+    print_stack_info();
 
-    // Prepare test buffers
-    uint8_t tx_buffer[BUFFER_SIZE];
-    uint8_t rx_buffer_polling[BUFFER_SIZE];
-    uint8_t rx_buffer_dma[BUFFER_SIZE];
-
-    for (int i = 0; i < BUFFER_SIZE; i++) {
-        tx_buffer[i] = (uint8_t)(i & 0xFF);
-    }
-
-    // --- 1. BENCHMARK METHOD A: CPU POLLING ---
-    memset(rx_buffer_polling, 0, BUFFER_SIZE);
-
-    DWT->CYCCNT = 0;
-    uint32_t start_polling = DWT->CYCCNT;
-
-    SPI1_TransmitReceiveStream(tx_buffer, rx_buffer_polling, BUFFER_SIZE);
-
-    uint32_t polling_cycles = DWT->CYCCNT - start_polling;
-
-    // --- 2. BENCHMARK METHOD B: DMA DUAL-STREAM ---
-    memset(rx_buffer_dma, 0, BUFFER_SIZE);
-
-    // Config DMA streams
-    DMA_Stream_Init(&(DMA2->Stream[3]), (uint32_t)&(SPI1->DR), (uint32_t)tx_buffer, BUFFER_SIZE, DMA_SxCR_CHSEL_3, DMA_SxCR_DIR_M2P);
-    DMA_Stream_Init(&(DMA2->Stream[0]), (uint32_t)&(SPI1->DR), (uint32_t)rx_buffer_dma, BUFFER_SIZE, DMA_SxCR_CHSEL_3, DMA_SxCR_DIR_P2M);
-    SPI1_DMA_Enable(1, 1);
-
-    DWT->CYCCNT = 0;
-    uint32_t start_dma = DWT->CYCCNT;
-
-    // Trigger DMA streams
-    DMA2->Stream[0].CR |= DMA_SxCR_EN;
-    DMA2->Stream[3].CR |= DMA_SxCR_EN;
-
-    uint32_t dma_trigger_cycles = DWT->CYCCNT - start_dma;
-
-    // Wait until DMA finish
-    while (!DMA_GetTCFlag(DMA2, 3));
-    while (!DMA_GetTCFlag(DMA2, 0));
-    DMA_ClearTCFlag(DMA2, 3);
-    DMA_ClearTCFlag(DMA2, 0);
-
-    // --- 3. PRINT COMPARISON REPORT ---
-	char log_buf[128];
-	snprintf(log_buf, sizeof(log_buf), "[BENCHMARK] Payload Size      : %d Bytes\r\n", BUFFER_SIZE);
-	UART_Print(log_buf);
-	snprintf(log_buf, sizeof(log_buf), "[BENCHMARK] Polling Cycles    : %lu cycles (%.2f us)\r\n", polling_cycles, (float)polling_cycles / 84.0f);
-	UART_Print(log_buf);
-	snprintf(log_buf, sizeof(log_buf), "[BENCHMARK] DMA Trigger Cycles: %lu cycles (%.2f us)\r\n", dma_trigger_cycles, (float)dma_trigger_cycles / 84.0f);
-	UART_Print(log_buf);
-
-	uint32_t ratio = polling_cycles / dma_trigger_cycles;
-	snprintf(log_buf, sizeof(log_buf), "[RESULT] Efficiency Gain      : ~%luux fewer CPU cycles!\r\n", ratio);
-	UART_Print(log_buf);
-	UART_Println("==================================================");
-
+    // Infinite loop running safely on PSP stack
     while (1) {
-        // CPU free
+        // Main application loop
     }
 }

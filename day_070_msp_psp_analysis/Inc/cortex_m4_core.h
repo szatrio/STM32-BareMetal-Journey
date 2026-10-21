@@ -111,5 +111,55 @@ typedef struct {
 #ifndef __NOP
 #define __NOP() __asm__ volatile ("nop")
 #endif
+// --- Core Register & Stack Pointer Intrinsics ---
+
+/**
+ * @brief Read Main Stack Pointer (MSP).
+ */
+static inline uint32_t __get_MSP(void) {
+    uint32_t result;
+    __asm volatile ("MRS %0, msp" : "=r" (result));
+    return result;
+}
+
+/**
+ * @brief Write Main Stack Pointer (MSP).
+ */
+static inline void __set_MSP(uint32_t topOfMainStack) {
+    __asm volatile ("MSR msp, %0" : : "r" (topOfMainStack) : "memory");
+}
+
+/**
+ * @brief Read Process Stack Pointer (PSP).
+ */
+static inline uint32_t __get_PSP(void) {
+    uint32_t result;
+    __asm volatile ("MRS %0, psp" : "=r" (result));
+    return result;
+}
+
+/**
+ * @brief Write Process Stack Pointer (PSP).
+ */
+static inline void __set_PSP(uint32_t topOfProcStack) {
+    __asm volatile ("MSR psp, %0" : : "r" (topOfProcStack) : "memory");
+}
+
+/**
+ * @brief Read CONTROL register.
+ */
+static inline uint32_t __get_CONTROL(void) {
+    uint32_t result;
+    __asm volatile ("MRS %0, control" : "=r" (result));
+    return result;
+}
+
+/**
+ * @brief Write CONTROL register and flush pipeline.
+ */
+static inline void __set_CONTROL(uint32_t control) {
+    __asm volatile ("MSR control, %0" : : "r" (control) : "memory");
+    __asm volatile ("isb");
+}
 
 #endif // CORTEX_M4_CORE_H
