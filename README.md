@@ -70,6 +70,9 @@ Click on any day's link to explore the source code, implementation details, and 
 | **Day 034** | [day_034_tim2_basic_timebase](./day_034_tim2_basic_timebase) | Bare-Metal TIM2 Hardware Timer Basic Timebase & Non-Blocking Polling |
 | **Day 035** | [day_035_tim2_interrupt](./day_035_tim2_interrupt) | Bare-Metal TIM2 Hardware Interrupt Architecture via ARM Cortex-M NVIC |
 | **Day 036** | [day_036_tim2_pwm_generation](./day_036_tim2_pwm_generation) | Day 036: Bare-Metal TIM2 Hardware PWM Generation via CCMR1 & CCER Architecture |
+| **Day 037** | [day_037_pwm_duty_cycle_abstraction](./day_037_pwm_duty_cycle_abstraction) | Bare-Metal Cortex-M4F Hardware FPU Integration & Floating-Point PWM Duty Cycle Modulation |
+| **Day 038** | [day_038_adc1_single_conversion](./day_038_adc1_single_conversion) | Day 038: Bare-Metal STM32F4 ADC1 Single Conversion Driver & Hardware Telemetry |
+
 
 ---
 
