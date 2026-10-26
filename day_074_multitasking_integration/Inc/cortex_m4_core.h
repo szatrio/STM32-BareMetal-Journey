@@ -73,6 +73,10 @@ typedef struct {
 #define SCB_CPACR_CP10_FULL     (3UL << 20) // Full access for CP10 (FPU)
 #define SCB_CPACR_CP11_FULL     (3UL << 22) // Full access for CP11 (FPU)
 
+// PendSV set-pending bit macro for context switching
+#ifndef SCB_ICSR_PENDSVSET_Msk
+#define SCB_ICSR_PENDSVSET_Msk  (1UL << 28)
+#endif
 
 // --- CoreDebug (For Enabling Trace/Debug) ---
 #define CoreDebug_BASE  (0xE000EDF0UL)
@@ -169,6 +173,20 @@ static inline void RTOS_SetPendSV_Priority(void) {
     // SHPR3 register handles priorities for SysTick and PendSV.
     // PendSV priority is controlled by byte offset [23:16] of SHPR3.
     SCB->SHPR[2] |= (0xFFUL << 16);
+}
+
+/**
+ * @brief Enable Global Interrupts
+ */
+static inline void __attribute__((always_inline)) _enable_irq(void) {
+    __asm volatile ("cpsie i" : : : "memory");
+}
+
+/**
+ * @brief Disable Global Interrupts
+ */
+static inline void __attribute__((always_inline)) _disable_irq(void) {
+    __asm volatile ("cpsid i" : : : "memory");
 }
 
 #endif // CORTEX_M4_CORE_H

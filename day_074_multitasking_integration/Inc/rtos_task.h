@@ -32,4 +32,10 @@ extern volatile TCB_t *pxNextTaskPtr;
  */
 bool RTOS_Task_Create(TCB_t *pxTask, void (*task_code)(void));
 
+void RTOS_Scheduler(void);
+
+void RTOS_Start(void);
+
+void SVC_Handler(void);
+
 #endif // RTOS_TASK_H
