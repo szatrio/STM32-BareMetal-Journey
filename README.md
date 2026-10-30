@@ -74,6 +74,7 @@ Click on any day's link to explore the source code, implementation details, and 
 | **Day 038** | [day_038_adc1_single_conversion](./day_038_adc1_single_conversion) | Day 038: Bare-Metal STM32F4 ADC1 Single Conversion Driver & Hardware Telemetry |
  **Day 039** | [day_039_adc1_continuous_mode_driver](./day_039_adc1_continuous_mode_driver | Day 039: Bare-Metal STM32F4 ADC1 Continuous Mode Driver & Autonomous Data Acquisition
 Objective |
+**Day 040** | [day_040_adc1_polling_ovr_timeout](./day_040_adc1_polling_ovr_timeout | Day 040: STM32F4 Bare-Metal ADC Overrun (OVR) & Timeout Guard Mechanism |
 
 ---
 
