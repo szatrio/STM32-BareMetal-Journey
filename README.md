@@ -77,6 +77,7 @@ Objective |
 | **Day 040** | [day_040_adc1_polling_ovr_timeout](./day_040_adc1_polling_ovr_timeout | Day 040: STM32F4 Bare-Metal ADC Overrun (OVR) & Timeout Guard Mechanism |
 | **Day 041** | [day_041_adc1_data_alignment_bit_masking](./day_041_adc1_data_alignment_bit_masking | Day 041: STM32F4 Bare-Metal ADC Data Alignment & Fast Bit Masking Architecture |
 
+| **Day 042** | day_042_adc1_pwm_integration](./day_042_adc1_pwm_integration | Day 042: STM32F4 Timer 2 PWM Architecture & ADC-to-PWM Closed-Loop Telemetry Integration |
 
 ---
 
