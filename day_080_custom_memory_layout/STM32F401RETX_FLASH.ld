@@ -1,6 +1,6 @@
 /* 
  * =================================================================
- * STM32F401RE Custom Linker Script - Days 80-83 Combined Layout
+ * STM32F401RE Custom Linker Script - Days 80
  * Target: STM32F401RE (Flash: 512KB, SRAM: 96KB)
  * =================================================================
  */
