@@ -77,6 +77,7 @@ Click on any day's link to explore the source code, implementation details, and 
 | **Day 041** | [day_041_adc1_data_alignment_bit_masking](./day_041_adc1_data_alignment_bit_masking) | Day 041: STM32F4 Bare-Metal ADC Data Alignment & Fast Bit Masking Architecture |
 | **Day 042** | [day_042_adc1_pwm_integration](./day_042_adc1_pwm_integration) | Day 042: STM32F4 Timer 2 PWM Architecture & ADC-to-PWM Closed-Loop Telemetry Integration |
 | **Day 043** | [day_043_dma_adc_setup](./day_043_dma_adc_setup) | Day 043: DMA Setup & Generic Driver Abstraction |
+| **Day 044** | [day_044_dma_adc_trigger](./day_044_dma_adc_trigger) | Day 044: ADC Data Streaming with DMA Circular Buffer |
 ---
 
 ## License
