@@ -78,6 +78,7 @@ Click on any day's link to explore the source code, implementation details, and 
 | **Day 042** | [day_042_adc1_pwm_integration](./day_042_adc1_pwm_integration) | Day 042: STM32F4 Timer 2 PWM Architecture & ADC-to-PWM Closed-Loop Telemetry Integration |
 | **Day 043** | [day_043_dma_adc_setup](./day_043_dma_adc_setup) | Day 043: DMA Setup & Generic Driver Abstraction |
 | **Day 044** | [day_044_dma_adc_trigger](./day_044_dma_adc_trigger) | Day 044: ADC Data Streaming with DMA Circular Buffer |
+| **Day 045** | [day_045_dma_status_monitoring](./day_045_dma_status_monitoring) | Day 045: DMA Status Monitoring & Flag Clearing |
 ---
 
 ## License
