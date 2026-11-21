@@ -81,6 +81,7 @@ Click on any day's link to explore the source code, implementation details, and 
 | **Day 045** | [day_045_dma_status_monitoring](./day_045_dma_status_monitoring) | Day 045: DMA Status Monitoring & Flag Clearing |
 | **Day 046** | [day_046_dma_background_sensor_processing](./day_046_dma_background_sensor_processing) | Day 046: Non-Blocking Background Sensor Processing |
 | **Day 047** | [day_047_i2c_register_setup](./day_047_i2c_register_setup) | Day 047: Bare-Metal I2C1 Register Setup & Clock Calibration |
+| **Day 048** | [day_048_i2c_start_stop](./day_048_i2c_start_stop) | Day 048: I2C1 Bus Transaction Control (START & STOP Signaling) |
 
 ---
 
